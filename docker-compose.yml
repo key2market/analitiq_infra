@@ -9,16 +9,25 @@ services:
       - "--providers.docker=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      # LetsEncrypt SSL
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
       - "--certificatesresolvers.myresolver.acme.email=your-email@example.com" # Define your email here
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      # Self-Signed Certificate
+      # - "--entrypoints.websecure.http.tls.certificates.certfile=/path/to/cert.pem"
+      # - "--entrypoints.websecure.http.tls.certificates.keyfile=/path/to/key.pem"
     ports:
       - "80:80" # The HTTP port
       - "443:443" # The HTTPS port
       - "8080:8080" # The Traefik Dashboard port
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      # LetsEncrypt SSL
       - "./letsencrypt:/letsencrypt"
+      # Self-Signed Certificate
+      # - "./path/to/cert.pem:/path/to/cert.pem"
+      # - "./path/to/key.pem:/path/to/key.pem"
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`traefik.example.com`)" # Define the hostname to be able to view the trafik dashboard
