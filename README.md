@@ -3,10 +3,10 @@ Frontend is in React and is located in /frontend directory
 The backend is inside the /app directory
 
 # Important files:
-.env - environmental variables for Docker container
-docker-compose - Docker compose file to deploy docker
-routers/chat.py - the main chat info is routed here from the front end
-main.py - an attempt at using socket.io
+-.env - environmental variables for Docker container
+-docker-compose - Docker compose file to deploy docker
+-routers/chat.py - the main chat info is routed here from the front end
+-main.py - an attempt at using socket.io
 
 # Deployment
 To deploy as a docker run docker-compose up.
