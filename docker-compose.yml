@@ -1,7 +1,30 @@
 # docker-compose.yml
-version: '3.8'
+version: "3.8"
 
 services:
+  traefik:
+    image: traefik:v2.11
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=your-email@example.com" # Define your email here
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80" # The HTTP port
+      - "443:443" # The HTTPS port
+      - "8080:8080" # The Traefik Dashboard port
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./letsencrypt:/letsencrypt"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`traefik.example.com`)" # Define the hostname to be able to view the trafik dashboard
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.routers.api.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/" # Username & Password
   web:
     build: .
     command: >
@@ -12,7 +35,7 @@ services:
         uvicorn app.main:app --host 0.0.0.0 --port $$FASTAPI_PORT;
       fi"
     ports:
-      - ${FASTAPI_PORT}:${FASTAPI_PORT}
+      - 127.0.0.1:${FASTAPI_PORT}:${FASTAPI_PORT}
     volumes:
       - .:/app
     env_file:
@@ -22,6 +45,8 @@ services:
       options:
         max-size: "1k"
         max-file: "3"
+    labels:
+      - "traefik.enable=false"
 
   frontend:
     stdin_open: true
@@ -34,10 +59,20 @@ services:
       - .env
     expose:
       - 8000
-    ports:
-      - 80:80
     logging:
       driver: "json-file"
       options:
         max-size: "1k"
         max-file: "3"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`your-frontend-domain.com`)" # frontend url
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend-secured.rule=Host(`your-frontend-domain.com`)" # frontend url
+      - "traefik.http.routers.frontend-secured.entrypoints=websecure"
+      - "traefik.http.routers.frontend-secured.tls.certresolver=myresolver"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.frontend.middlewares=redirect-to-https"
+networks:
+  default:
+    name: my_network
