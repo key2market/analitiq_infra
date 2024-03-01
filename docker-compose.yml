@@ -1,40 +1,40 @@
-# docker-compose.yml
-version: "3.8"
+version: '3.9'
 
 services:
   traefik:
     image: traefik:v2.11
     command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
       # LetsEncrypt SSL
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=your-email@example.com" # Define your email here
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.myresolver.acme.email=your-email@example.com' # Define your email here
+      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
       # Self-Signed Certificate
       # - "--entrypoints.websecure.http.tls.certificates.certfile=/path/to/cert.pem"
       # - "--entrypoints.websecure.http.tls.certificates.keyfile=/path/to/key.pem"
     ports:
-      - "80:80" # The HTTP port
-      - "443:443" # The HTTPS port
-      - "8080:8080" # The Traefik Dashboard port
+      - '80:80' # The HTTP port
+      - '443:443' # The HTTPS port
+      - '8080:8080' # The Traefik Dashboard port
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - '/var/run/docker.sock:/var/run/docker.sock'
       # LetsEncrypt SSL
-      - "./letsencrypt:/letsencrypt"
+      - './letsencrypt:/letsencrypt'
       # Self-Signed Certificate
       # - "./path/to/cert.pem:/path/to/cert.pem"
       # - "./path/to/key.pem:/path/to/key.pem"
 
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`traefik.example.com`)" # Define the hostname to be able to view the trafik dashboard
-      - "traefik.http.routers.api.service=api@internal"
-      - "traefik.http.routers.api.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/" # Username & Password
-  web:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.api.rule=Host(`traefik.example.com`)' # Define the hostname to be able to view the trafik dashboard
+      - 'traefik.http.routers.api.service=api@internal'
+      - 'traefik.http.routers.api.middlewares=auth'
+      - 'traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/' # Username & Password
+  backend:
+    container_name: Backend
     build: .
     command: >
       sh -c "
@@ -50,14 +50,15 @@ services:
     env_file:
       - .env
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "1k"
-        max-file: "3"
+        max-size: '1k'
+        max-file: '3'
     labels:
-      - "traefik.enable=false"
+      - 'traefik.enable=false'
 
   frontend:
+    container_name: Frontend
     stdin_open: true
     build:
       context: ./frontend
@@ -69,19 +70,16 @@ services:
     expose:
       - 8000
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "1k"
-        max-file: "3"
+        max-size: '1k'
+        max-file: '3'
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`your-frontend-domain.com`)" # frontend url
-      - "traefik.http.routers.frontend.entrypoints=web"
-      - "traefik.http.routers.frontend-secured.rule=Host(`your-frontend-domain.com`)" # frontend url
-      - "traefik.http.routers.frontend-secured.entrypoints=websecure"
-      - "traefik.http.routers.frontend-secured.tls.certresolver=myresolver"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.frontend.middlewares=redirect-to-https"
-networks:
-  default:
-    name: my_network
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=Host(`your-frontend-domain.com`)' # frontend url
+      - 'traefik.http.routers.frontend.entrypoints=web'
+      - 'traefik.http.routers.frontend-secured.rule=Host(`your-frontend-domain.com`)' # frontend url
+      - 'traefik.http.routers.frontend-secured.entrypoints=websecure'
+      - 'traefik.http.routers.frontend-secured.tls.certresolver=myresolver'
+      - 'traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https'
+      - 'traefik.http.routers.frontend.middlewares=redirect-to-https'
