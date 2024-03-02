@@ -2,19 +2,19 @@ version: '3.9'
 
 services:
   traefik:
-    image: traefik:v2.11
+    image: traefik:v2.5
     command:
       - '--api.insecure=true'
       - '--providers.docker=true'
       - '--entrypoints.web.address=:80'
       - '--entrypoints.websecure.address=:443'
       # LetsEncrypt SSL
-      - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
-      - '--certificatesresolvers.myresolver.acme.email=your-${LETS_ENCRYPT_EMAIL}' # Define your email here
-      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
+      #- '--certificatesresolvers.myresolver.acme.tlschallenge=true'
+      #- '--certificatesresolvers.myresolver.acme.email=your-${LETS_ENCRYPT_EMAIL}' # Define your email here
+      #- '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
       # Self-Signed Certificate
-      # - "--entrypoints.websecure.http.tls.certificates.certfile=/path/to/cert.pem"
-      # - "--entrypoints.websecure.http.tls.certificates.keyfile=/path/to/key.pem"
+      - "--entrypoints.websecure.http.tls.certificates.certfile=/Users/kirillandriychuk/.ssh/analitiq/cert.pem"
+      - "--entrypoints.websecure.http.tls.certificates.keyfile=/Users/kirillandriychuk/.ssh/analitiq/key.pem"
     ports:
       - '80:80' # The HTTP port
       - '443:443' # The HTTPS port
@@ -22,10 +22,10 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       # LetsEncrypt SSL
-      - './letsencrypt:/letsencrypt'
+      #- './letsencrypt:/letsencrypt'
       # Self-Signed Certificate
-      # - "./path/to/cert.pem:/path/to/cert.pem"
-      # - "./path/to/key.pem:/path/to/key.pem"
+      - "./Users/kirillandriychuk/.ssh/analitiq/cert.pem:/Users/kirillandriychuk/.ssh/analitiq/cert.pem"
+      - "./Users/kirillandriychuk/.ssh/analitiq/key.pem:/Users/kirillandriychuk/.ssh/analitiq/key.pem"
 
     labels:
       - 'traefik.enable=true'
