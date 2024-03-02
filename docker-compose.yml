@@ -15,7 +15,7 @@ services:
     ports:
       - '80:80' # The HTTP port
       - '443:443' # The HTTPS port
-      - '8082:8080' # The Traefik Dashboard port
+      - '8080:8080' # The Traefik Dashboard port
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       # LetsEncrypt SSL
@@ -74,7 +74,7 @@ services:
       - 'traefik.http.routers.frontend-secured.rule=Host(`${FRONTEND_URL}`)' # frontend url
       - 'traefik.http.routers.frontend-secured.entrypoints=websecure'
       # Lets Encrypt
-      - 'traefik.http.routers.frontend-secured.tls.certresolver=tls'
+      - 'traefik.http.routers.frontend-secured.tls.certresolver=myresolver'
       # Self-Signed Certificate
       # - 'traefik.http.routers.frontend-secured.tls=tls'
       - 'traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https'
