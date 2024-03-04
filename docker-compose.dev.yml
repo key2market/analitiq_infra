@@ -1,0 +1,73 @@
+version: '3.9'
+
+services:
+  traefik:
+    image: traefik:v2.11
+    container_name: Proxy
+    command:
+      - '--providers.docker=true'
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./configuration/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./configuration/static.yml:/etc/traefik/traefik.yml:ro
+      - ./certs:/etc/certs:ro # Use self-signed certificates for development
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik-dev.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
+      - 'traefik.http.routers.traefik-dev.service=api@internal'
+      - 'traefik.http.routers.traefik-dev.tls=true'
+
+  backend:
+    container_name: Backend
+    build: .
+    command: >
+      sh -c "
+      if [ '$$ENVIRONMENT' = 'dev' ] ; then
+        uvicorn app.main:app --reload --host 0.0.0.0 --port $$FASTAPI_PORT;
+      else
+        uvicorn app.main:app --host 0.0.0.0 --port $$FASTAPI_PORT;
+      fi"
+    ports:
+      - '127.0.0.1:${FASTAPI_PORT}:${FASTAPI_PORT}'
+    volumes:
+      - .:/app
+    working_dir: /app
+    env_file:
+      - .env
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '1k'
+        max-file: '3'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend-dev.rule=Host(`${TRAEFIK_BACKEND_URL}`)'
+      - 'traefik.http.routers.backend-dev.tls=true'
+
+  frontend:
+    container_name: Frontend
+    stdin_open: true
+    build:
+      context: ./frontend
+      args:
+        HOST: ${VIRTUAL_HOST}
+        FASTAPI_PORT: ${FASTAPI_PORT}
+    env_file:
+      - .env
+    ports:
+      - '127.0.0.1:8000:8000'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '1k'
+        max-file: '3'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend-dev.rule=Host(`${TRAEFIK_FRONTEND_URL}`)'
+      - 'traefik.http.routers.frontend-dev.tls=true'
