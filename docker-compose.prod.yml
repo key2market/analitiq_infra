@@ -7,22 +7,20 @@ services:
     command:
       - --global.sendAnonymousUsage=false # Disable anonymous usage statistics
       - --api.dashboard=true # Enable the Traefik dashboard
-      - --api.insecure=true # Allow insecure access to the dashboard (consider security implications)
+      - --api.insecure=false # Allow insecure access to the dashboard (consider security implications)
       - --providers.docker # Enable Docker as a provider
       - --providers.docker.endpoint=unix:///var/run/docker.sock # Docker daemon endpoint
       - --providers.docker.watch=true # Watch for changes in the Docker services
       - --providers.docker.exposedByDefault=false # Disable automatic exposure of Docker services
-      - --providers.file.filename=/etc/traefik/dynamic.yml # Specify the dynamic configuration file
-      - --providers.file.watch=true # Enable watching for changes in the dynamic configuration file
       - --log.level=INFO # Set logging level to INFO
       - --log.format=common # Use the common log format
       - --entrypoints.http.address=:80 # Define the HTTP entrypoint
       - --entrypoints.http.http.redirections.entrypoint.to=https # Redirect HTTP to HTTPS
       - --entrypoints.http.http.redirections.entrypoint.scheme=https # Use HTTPS scheme for redirection
       - --entrypoints.https.address=:443 # Define the HTTPS entrypoint
-      - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
-      - '--certificatesresolvers.myresolver.acme.email=${LETS_ENCRYPT_EMAIL}'
-      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      - --certificatesresolvers.myresolver.acme.email=${LETS_ENCRYPT_EMAIL}
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -36,8 +34,9 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.traefik-prod.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
       - 'traefik.http.routers.traefik-prod.service=api@internal'
-      - "traefik.http.routers.backend-prod.tls.certresolver=myresolver"
-
+      - "traefik.http.routers.traefik-prod.tls.certresolver=myresolver"
+      - "traefik.http.routers.api.middlewares=api-auth"
+      - "traefik.http.middlewares.api-auth.basicauth.users=${TRAEFIK_DASHBOARD_USERNAME}:${TRAEFIK_DASHBOARD_PASSWORD}"
   backend:
     container_name: Backend
     build: .
