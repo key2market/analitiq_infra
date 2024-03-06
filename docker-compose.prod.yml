@@ -71,7 +71,7 @@ services:
     build:
       context: ./frontend
       args:
-        HOST: ${VIRTUAL_HOST}
+        HOST: ${TRAEFIK_BACKEND_URL}
         FASTAPI_PORT: ${FASTAPI_PORT}
     env_file:
       - .env
