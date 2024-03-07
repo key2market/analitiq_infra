@@ -59,10 +59,10 @@ services:
       options:
         max-size: '1k'
         max-file: '3'
-    # labels:
-    #   - 'traefik.enable=true'
-    #   - "traefik.http.routers.backend-prod.rule=Host(`${TRAEFIK_BACKEND_URL}`)"
-    #   - "traefik.http.routers.backend-prod.tls.certresolver=myresolver"
+    labels:
+      - 'traefik.enable=true'
+      - "traefik.http.routers.backend-prod.rule=Host(`${TRAEFIK_BACKEND_URL}`)"
+      - "traefik.http.routers.backend-prod.tls.certresolver=myresolver"
 
   frontend:
     container_name: Frontend
@@ -70,8 +70,7 @@ services:
     build:
       context: ./frontend
       args:
-        HOST: ${FASTAPI_HOST}
-        FASTAPI_PORT: ${FASTAPI_PORT}
+        FASTAPI_HOST: ${FASTAPI_HOST}
     env_file:
       - .env
     ports:
