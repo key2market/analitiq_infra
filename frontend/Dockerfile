@@ -4,9 +4,8 @@ COPY package.json .
 RUN npm install
 COPY . .
 # Use the build argument to set the environment variable
-ARG HOST
-ARG FASTAPI_PORT
-ENV VITE_SERVER_ADRESS=${HOST}:${FASTAPI_PORT}
+ARG FASTAPI_HOST
+ENV VITE_SERVER_ADRESS=${FASTAPI_HOST}
 RUN npm run build
 
 FROM nginx:alpine
