@@ -14,14 +14,14 @@ services:
       - 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./configuration/dynamic.yml:/etc/traefik/dynamic.yml:ro
-      - ./configuration/static.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./traefik/static.yml:/etc/traefik/traefik.yml:ro
       - ./certs:/etc/certs:ro # Use self-signed certificates for development
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.traefik-dev.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
-      - 'traefik.http.routers.traefik-dev.service=api@internal'
-      - 'traefik.http.routers.traefik-dev.tls=true'
+    # labels:
+    #   - 'traefik.enable=true'
+    #   - 'traefik.http.routers.traefik-dev.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
+    #   - 'traefik.http.routers.traefik-dev.service=api@internal'
+    #   - 'traefik.http.routers.traefik-dev.tls=true'
 
   backend:
     container_name: Backend
@@ -56,8 +56,7 @@ services:
     build:
       context: ./frontend
       args:
-        HOST: ${TRAEFIK_BACKEND_URL}
-        FASTAPI_PORT: ${FASTAPI_PORT}
+        FASTAPI_HOST: https://${FASTAPI_HOST}
     env_file:
       - .env
     ports:
