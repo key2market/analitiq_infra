@@ -1,0 +1,87 @@
+version: '3.9'
+
+services:
+  traefik:
+    image: traefik:v2.11
+    container_name: Proxy
+    command:
+      - --global.sendAnonymousUsage=false # Disable anonymous usage statistics
+      - --api.dashboard=true # Enable the Traefik dashboard
+      - --api.insecure=false # Allow insecure access to the dashboard (consider security implications)
+      - --providers.docker # Enable Docker as a provider
+      - --providers.docker.endpoint=unix:///var/run/docker.sock # Docker daemon endpoint
+      - --providers.docker.watch=true # Watch for changes in the Docker services
+      - --providers.docker.exposedByDefault=false # Disable automatic exposure of Docker services
+      - --log.level=INFO # Set logging level to INFO
+      - --log.format=common # Use the common log format
+      - --entrypoints.http.address=:80 # Define the HTTP entrypoint
+      - --entrypoints.http.http.redirections.entrypoint.to=https # Redirect HTTP to HTTPS
+      - --entrypoints.http.http.redirections.entrypoint.scheme=https # Use HTTPS scheme for redirection
+      - --entrypoints.https.address=:443 # Define the HTTPS entrypoint
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      - --certificatesresolvers.myresolver.acme.email=${LETS_ENCRYPT_EMAIL}
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - './letsencrypt:/letsencrypt'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik-prod.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
+      - 'traefik.http.routers.traefik-prod.service=api@internal'
+      - "traefik.http.routers.traefik-prod.tls.certresolver=myresolver"
+      - "traefik.http.routers.api.middlewares=api-auth"
+      - "traefik.http.middlewares.api-auth.basicauth.users=${TRAEFIK_DASHBOARD_USERNAME}:${TRAEFIK_DASHBOARD_PASSWORD}"
+  backend:
+    container_name: Backend
+    build: .
+    command: >
+      sh -c "
+      if [ '$$ENVIRONMENT' = 'dev' ] ; then
+        uvicorn app.main:app --reload --host 0.0.0.0 --port $$FASTAPI_PORT;
+      else
+        uvicorn app.main:app --host 0.0.0.0 --port $$FASTAPI_PORT;
+      fi"
+    ports:
+      - '127.0.0.1:${FASTAPI_PORT}:${FASTAPI_PORT}'
+    volumes:
+      - .:/app
+    working_dir: /app
+    env_file:
+      - .env
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '1k'
+        max-file: '3'
+    labels:
+      - 'traefik.enable=true'
+      - "traefik.http.routers.backend-prod.rule=Host(`${TRAEFIK_BACKEND_URL}`)"
+      - "traefik.http.routers.backend-prod.tls.certresolver=myresolver"
+
+  frontend:
+    container_name: Frontend
+    stdin_open: true
+    build:
+      context: ./frontend
+      args:
+        HOST: ${TRAEFIK_BACKEND_URL}
+        FASTAPI_PORT: ${FASTAPI_PORT}
+    env_file:
+      - .env
+    ports:
+      - '127.0.0.1:8000:8000'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '1k'
+        max-file: '3'
+    labels:
+      - 'traefik.enable=true'
+      - "traefik.http.routers.frontend-prod.rule=Host(`${TRAEFIK_FRONTEND_URL}`)"
+      - "traefik.http.routers.frontend-prod.tls.certresolver=myresolver"
