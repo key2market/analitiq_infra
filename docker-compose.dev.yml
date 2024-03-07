@@ -56,7 +56,7 @@ services:
     build:
       context: ./frontend
       args:
-        FASTAPI_HOST: ${FASTAPI_HOST}
+        FASTAPI_HOST: https://${FASTAPI_HOST}
     env_file:
       - .env
     ports:
