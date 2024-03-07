@@ -14,8 +14,8 @@ services:
       - 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./configuration/dynamic.yml:/etc/traefik/dynamic.yml:ro
-      - ./configuration/static.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./traefik/static.yml:/etc/traefik/traefik.yml:ro
       - ./certs:/etc/certs:ro # Use self-signed certificates for development
     labels:
       - 'traefik.enable=true'
