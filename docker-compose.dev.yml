@@ -56,7 +56,7 @@ services:
     build:
       context: ./frontend
       args:
-        FASTAPI_HOST: https://${FASTAPI_HOST}
+        FASTAPI_HOST: https://${TRAEFIK_BACKEND_URL}
     env_file:
       - .env
     ports:
