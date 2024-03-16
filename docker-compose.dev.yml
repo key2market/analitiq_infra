@@ -17,11 +17,11 @@ services:
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ./traefik/static.yml:/etc/traefik/traefik.yml:ro
       - ./certs:/etc/certs:ro # Use self-signed certificates for development
-    # labels:
-    #   - 'traefik.enable=true'
-    #   - 'traefik.http.routers.traefik-dev.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
-    #   - 'traefik.http.routers.traefik-dev.service=api@internal'
-    #   - 'traefik.http.routers.traefik-dev.tls=true'
+    labels:
+     - 'traefik.enable=true'
+     - 'traefik.http.routers.traefik-dev.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
+     - 'traefik.http.routers.traefik-dev.service=api@internal'
+     - 'traefik.http.routers.traefik-dev.tls=true'
 
   backend:
     container_name: Backend

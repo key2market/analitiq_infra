@@ -17,11 +17,11 @@ services:
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ./traefik/static.yml:/etc/traefik/traefik.yml:ro
       - ./certs:/etc/certs:ro # Use self-signed certificates for development
-    #labels:
-    #  - 'traefik.enable=true'
-    #  - 'traefik.http.routers.traefik-dev.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
-    #  - 'traefik.http.routers.traefik-dev.service=api@internal'
-    #  - 'traefik.http.routers.traefik-dev.tls=true'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik-dev.rule=Host(`${TRAEFIK_DASHBOARD_URL}`)'
+      - 'traefik.http.routers.traefik-dev.service=api@internal'
+      - 'traefik.http.routers.traefik-dev.tls=true'
 
   backend:
     container_name: Backend
@@ -45,10 +45,10 @@ services:
       options:
         max-size: '1k'
         max-file: '3'
-    #labels:
-    #  - 'traefik.enable=true'
-    #  - 'traefik.http.routers.backend-dev.rule=Host(`${TRAEFIK_BACKEND_URL}`)'
-    #  - 'traefik.http.routers.backend-dev.tls=true'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend-dev.rule=Host(`${TRAEFIK_BACKEND_URL}`)'
+      - 'traefik.http.routers.backend-dev.tls=true'
 
   frontend:
     container_name: Frontend
@@ -56,7 +56,7 @@ services:
     build:
       context: ./frontend
       args:
-        HOST: ${FASTAPI_HOST}
+        HOST: ${TRAEFIK_BACKEND_URL}
         FASTAPI_PORT: ${FASTAPI_PORT}
     env_file:
       - .env
