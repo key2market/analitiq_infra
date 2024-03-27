@@ -49,6 +49,13 @@ def get_chat_session(db: Session, user_id: int, id: str) -> ChatSession:
         .filter(models.ChatSession.id == id) \
         .first()
 
+def get_chat_session_by_name(db: Session, user_id: int, chat_name: str) -> ChatSession:
+    print(f"get_chat_session_by_name: {user_id}, {chat_name}")
+    return db.query(models.ChatSession) \
+        .filter(models.ChatSession.user_id == user_id) \
+        .filter(models.ChatSession.chat_name == chat_name) \
+        .all()
+
 def get_chat_history(db: Session, user_id: int, session_id: str) -> List[ChatHistory]:
     return db.query(models.ChatHistory) \
         .filter(models.ChatHistory.user_id == user_id) \

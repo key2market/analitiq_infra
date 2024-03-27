@@ -91,6 +91,29 @@ async def get_chat_session(
     """
     return crud.get_chat_session(db=db, user_id=current_user.id, id=id)
 
+@router.get("/chat_name/{chat_name}")
+async def get_chat_session_by_name(
+    chat_name: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    """
+    Get a chat session for a user by chat session name.
+
+    param chat_name: chat session name (path parameter)
+    param current_user: current logged in user (dependencies)
+    param db: Database session (dependencies)
+
+    Sample Response Body:
+    {
+        "user_id": 1,
+        "chat_name": "query-sales-stats",
+        "id": "740ee8f7-649a-4db1-9c69-21034a5f5286",
+        "created_at": "2023-12-05T23:21:34.564324"
+    }
+    """
+    return crud.get_chat_session_by_name(db=db, user_id=current_user.id, chat_name=chat_name)
+
 @router.get("/{id}/history")
 async def get_chat_session_history(
     id: str,
