@@ -72,6 +72,8 @@ async def login(
 
 @router.post("/get_eternal_access_token", response_model=Token)
 async def get_eternal_access_token(username: str = Form(), email: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
+    if username != os.getenv("SLACK_CLIENT_ID") or password != os.getenv("SLACK_CLIENT_SECRET"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username/password")
     user = UserCreate(username=username, email=email, password=password)
     db_user = crud.get_user(db, user.username)
     if not db_user:
