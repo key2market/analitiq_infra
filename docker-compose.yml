@@ -13,8 +13,6 @@ services:
       fi"
     ports:
       - ${FASTAPI_PORT}:${FASTAPI_PORT}
-    networks:
-      - docker_net
     volumes:
       - .:/app
     env_file:
