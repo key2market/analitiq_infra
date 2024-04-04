@@ -28,6 +28,11 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
     return encoded_jwt
 
+def create_access_token_immortal(data: dict):
+    to_encode = data.copy()
+    encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
+    return encoded_jwt
+
 def authenticate_user(db: Session, username: str, password: str):
     user = get_user(db, username)
     if not user:
@@ -62,6 +67,19 @@ async def login(
     access_token = create_access_token(
         data={"sub": user.username},
         expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/get_eternal_access_token", response_model=Token)
+async def get_eternal_access_token(username: str = Form(), email: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
+    if username != os.getenv("SLACK_CLIENT_ID") or password != os.getenv("SLACK_CLIENT_SECRET"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username/password")
+    user = UserCreate(username=username, email=email, password=password)
+    db_user = crud.get_user(db, user.username)
+    if not db_user:
+        crud.create_user(db=db, user=user)
+    access_token = create_access_token_immortal(
+        data={"sub": user.username},
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
