@@ -1,19 +1,14 @@
 import React from "react";
-import { InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { InputLabel, MenuItem, Select, SelectProps } from "@mui/material";
 import { StyledFormControl } from "./style";
-
 interface Option {
-  value: string;
-  label: string;
+    value: string;
+    label: string;
 }
 
-interface CustomSelectProps {
-  options: Option[];
-  disabled?: boolean; // Making disabled optional
-  label?: string;     // Making label optional
-  value?: string;     // Making value optional
-  onChange?: (event: SelectChangeEvent<string>) => void; // Making onChange optional
-}
+type CustomSelectProps = SelectProps & {
+    options: Option[];
+};
 
 const CustomSelect: React.FC<CustomSelectProps> = (props) => {
   return (

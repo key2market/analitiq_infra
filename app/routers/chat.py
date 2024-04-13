@@ -26,8 +26,7 @@ async def execute_user_query(
     sql_query = result.get("response")
     dataframe = result.get("response")
     plot_code = result.get("response")
-    crud.add_message_to_chat_session_history(db=db, chat_history=ChatMessage(
-        **message_info, message_type="aa", message_content=sql_query, content_type="sql"))
+    crud.add_message_to_chat_session_history(db=db, chat_history=ChatMessage(**message_info, message_type="aa", message_content=sql_query, content_type="sql"))
 
     return {
         "session_id": session_id,
